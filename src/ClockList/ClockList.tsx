@@ -4,6 +4,7 @@ import ClocksGrid from "./ClocksGrid";
 import { Container } from "@material-ui/core";
 import { useParams } from "react-router";
 import { isNullOrWhitespace } from "../Common/helpers";
+import axios from "axios";
 
 const defaultState: string[] = [];
 
@@ -12,24 +13,19 @@ const ClockList = () => {
   const { id } = useParams();
 
   useEffect(() => {
-    const localStorageValues = localStorage.getItem("internationalClocks");
-    if (localStorageValues != null && !isNullOrWhitespace(localStorageValues)) {
-      const storage = JSON.parse(localStorageValues);
-      const intitialItems: string[] = storage[id];
-      if (intitialItems != null) setClocksList(intitialItems);
-    }
+    axios
+      .get(`http://localhost:3006/internationalClock/${id}`)
+      .then((result) => {
+        const storage = JSON.parse(result.data);
+        const intitialItems: string[] = storage[id];
+        if (intitialItems != null) setClocksList(intitialItems);
+      });
   }, [id]);
 
   const changeItems = (items: string[]) => {
-    setClocksList(items);
-    const localStorageValues = localStorage.getItem("internationalClocks");
-    let storage = {};
-    if (localStorageValues != null && !isNullOrWhitespace(localStorageValues)) {
-      storage = JSON.parse(localStorageValues);
-      // @ts-ignore
-      storage[id] = items;
-    }
-    localStorage.setItem("internationalClocks", JSON.stringify(storage));
+    axios.post(`http://localhost:3006/internationalClock/${id}`).then(() => {
+      setClocksList(items);
+    });
   };
 
   const handleNewItem = (item: string) => {
